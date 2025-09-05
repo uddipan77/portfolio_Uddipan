@@ -1,0 +1,503 @@
+// app/page.tsx
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
+
+/* ====== CHANGE THIS TO YOUR OWN FORMSPREE ENDPOINT ====== */
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xyzdbayk";
+/* ======================================================== */
+
+const SECTION_IDS = ["about", "projects", "skills", "experience", "education", "contact"] as const;
+type SectionId = (typeof SECTION_IDS)[number];
+
+const Section = ({
+  id,
+  title,
+  children,
+}: {
+  id: SectionId;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <section id={id} className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 scroll-mt-24">
+    {/* Full-length underline directly under the heading text */}
+    <h2 className="relative inline-block text-5xl md:text-6xl font-semibold mb-12">
+      {title}
+      <span className="absolute left-0 -bottom-2 block h-[3px] w-full rounded-full bg-gradient-to-r from-pink-500 via-purple-400 to-blue-400" />
+    </h2>
+    <div className="space-y-6 text-lg md:text-xl leading-8">{children}</div>
+  </section>
+);
+
+const Chip = ({ children }: { children: React.ReactNode }) => (
+  <span className="inline-block rounded-full border px-3 py-1 text-sm">{children}</span>
+);
+
+/** Theme toggle — avoids hydration mismatch and persists preference */
+function ThemeToggle() {
+  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    setMounted(true);
+    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as
+      | "light"
+      | "dark"
+      | null;
+    const prefersDark =
+      typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+    const initial = stored ?? (prefersDark ? "dark" : "light");
+    setTheme(initial);
+    document.documentElement.classList.toggle("dark", initial === "dark");
+    document.body.classList.toggle("dark", initial === "dark");
+  }, []);
+
+  const toggle = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    if (typeof window !== "undefined") localStorage.setItem("theme", next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+    document.body.classList.toggle("dark", next === "dark");
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className="ml-auto p-2 rounded-full border text-base hover:bg-black/5 dark:hover:bg-white/10"
+      aria-label="Toggle theme"
+      suppressHydrationWarning
+      title={mounted ? (theme === "dark" ? "Switch to light" : "Switch to dark") : "Toggle theme"}
+    >
+      {mounted ? (
+        theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
+      ) : (
+        <span className="inline-block w-5 h-5" />
+      )}
+    </button>
+  );
+}
+
+/** Simple toast */
+function Toast({ show, kind, message }: { show: boolean; kind: "success" | "error"; message: string }) {
+  if (!show) return null;
+  return (
+    <div
+      className={[
+        "fixed left-1/2 -translate-x-1/2 bottom-6 z-50 rounded-full px-4 py-2 shadow-lg text-sm",
+        kind === "success"
+          ? "bg-emerald-600 text-white"
+          : "bg-rose-600 text-white",
+      ].join(" ")}
+    >
+      {message}
+    </div>
+  );
+}
+
+export default function Page() {
+  const [active, setActive] = useState<SectionId>("about");
+  const offsetsRef = useRef<Record<SectionId, number>>({} as any);
+
+  // Scroll-spy with “bottom-of-page = contact” guarantee
+  useEffect(() => {
+    const computeOffsets = () => {
+      const m: Record<SectionId, number> = {} as any;
+      SECTION_IDS.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) m[id] = el.getBoundingClientRect().top + window.scrollY;
+      });
+      offsetsRef.current = m;
+    };
+
+    const onScroll = () => {
+      const y = window.scrollY + 130; // header height offset
+      const doc = document.documentElement;
+      const atBottom = Math.ceil(window.scrollY + window.innerHeight) >= doc.scrollHeight - 2;
+      if (atBottom) {
+        setActive("contact");
+        return;
+      }
+
+      let current: SectionId = "about";
+      for (const id of SECTION_IDS) {
+        if (y >= (offsetsRef.current[id] ?? Number.POSITIVE_INFINITY)) current = id;
+        else break;
+      }
+      setActive(current);
+    };
+
+    computeOffsets();
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", computeOffsets);
+    // Recompute once images (e.g., profile) load
+    window.addEventListener("load", computeOffsets);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", computeOffsets);
+      window.removeEventListener("load", computeOffsets);
+    };
+  }, []);
+
+  const navLinks = useMemo(
+    () => SECTION_IDS.map((id) => ({ id, label: id.charAt(0).toUpperCase() + id.slice(1) })),
+    []
+  );
+
+  // Base classes for the nav link underline (full width of the link)
+  const linkBase =
+    "relative pb-2 transition-colors hover:opacity-90 after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:rounded-full after:bg-gradient-to-r after:from-pink-500 after:via-purple-400 after:to-blue-400 after:transition-all after:duration-300";
+
+  // Toast state for contact form
+  const [toast, setToast] = useState<{ show: boolean; kind: "success" | "error"; message: string }>({
+    show: false,
+    kind: "success",
+    message: "",
+  });
+
+  const showToast = (kind: "success" | "error", message: string) => {
+    setToast({ show: true, kind, message });
+    setTimeout(() => setToast((t) => ({ ...t, show: false })), 3200);
+  };
+
+  return (
+    <main className="min-h-screen">
+      {/* Sticky, always-visible nav at the very top */}
+      <header className="sticky top-0 z-50 backdrop-blur bg-white/75 dark:bg-black/50 border-b border-black/10 dark:border-white/10">
+        <nav className="max-w-[1400px] mx-auto px-6 md:px-12 py-3 md:py-4 flex items-center gap-7 text-base md:text-lg">
+          {navLinks.map(({ id, label }) => {
+            const isActive = active === id;
+            return (
+              <a
+                key={id}
+                href={`#${id}`}
+                className={[
+                  linkBase,
+                  isActive
+                    ? "font-semibold text-black dark:text-white after:w-full"
+                    : "opacity-75 after:w-0 hover:after:w-full",
+                ].join(" ")}
+              >
+                {label}
+              </a>
+            );
+          })}
+          <ThemeToggle />
+        </nav>
+      </header>
+
+      {/* HERO */}
+      <section className="max-w-[1400px] mx-auto px-6 md:px-12 min-h-[55vh] md:min-h-[60vh] flex flex-col items-center justify-center text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-6xl md:text-8xl font-extrabold tracking-tight"
+        >
+          Uddipan Basu Bir
+        </motion.h1>
+
+        <p className="mt-4 text-2xl md:text-3xl opacity-90">Data Scientist · Applied AI Engineer</p>
+
+        <div className="mt-6 flex items-center justify-center gap-4">
+          <a
+            className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-base md:text-lg font-medium hover:bg-black/5 dark:hover:bg-white/10"
+            href="assets/files/Resume_Uddipan.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Download Resume
+          </a>
+        </div>
+
+        <div className="mt-5 flex items-center justify-center gap-4">
+          <Link
+            href="https://www.linkedin.com/in/uddipan-basu-bir/"
+            target="_blank"
+            className="p-2 rounded-full border"
+            rel="noopener noreferrer"
+          >
+            <Linkedin className="w-5 h-5" />
+          </Link>
+          <Link
+            href="https://github.com/uddipan77"
+            target="_blank"
+            className="p-2 rounded-full border"
+            rel="noopener noreferrer"
+          >
+            <Github className="w-5 h-5" />
+          </Link>
+          <Link href="mailto:uddipanbb95@gmail.com" className="p-2 rounded-full border">
+            <Mail className="w-5 h-5" />
+          </Link>
+        </div>
+
+        <p className="mt-3 text-sm opacity-70">Erlangen, Germany</p>
+      </section>
+
+      {/* ABOUT */}
+      <Section id="about" title="About">
+        <div className="grid md:grid-cols-[1fr,360px] items-center gap-12">
+          <div>
+            <p className="opacity-90">
+              I’m a Data Science M.Sc. student (AI & ML) at Friedrich-Alexander-Universität Erlangen-Nürnberg, with
+              hands-on experience building ML/AI applications and agents. I enjoy turning messy data into useful products
+              and crafting reproducible pipelines—from modeling and evaluation to deployment.
+            </p>
+            <ul className="list-disc pl-6 opacity-90 mt-5">
+              <li>Currently exploring Vision-Language Models for structured text extraction (Master’s thesis).</li>
+              <li>Building an AI agent for question-answering directly over Excel data (Working Student @ Siemens AG).</li>
+            </ul>
+          </div>
+          <div className="flex justify-center md:justify-end">
+            <img
+              src="images/profile.png"
+              alt="Uddipan Basu Bir"
+              className="w-48 h-48 md:w-72 md:h-72 rounded-full object-cover ring-2 ring-black/10 dark:ring-white/20"
+            />
+          </div>
+        </div>
+      </Section>
+
+      {/* PROJECTS */}
+      <Section id="projects" title="Projects">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {[
+            {
+              name: "AI-FAPS: Multi-Modal · Multi-View · Multi-Task Pipeline",
+              desc: "Deep learning pipeline for quality monitoring in industrial manufacturing.",
+              link: "https://github.com/uddipan77/AI-FAPS-Multi-Modal-View-Task-Pipeline",
+            },
+            {
+              name: "Self/Semi-Supervised Image Classification (Industrial Inspection)",
+              desc: "Comparative assessment of self-, semi-, and combined learning approaches.",
+              link: "https://github.com/uddipan77/ai-faps-self-semi-combined-dl-pipeline-industrial-inspection",
+            },
+            {
+              name: "OCR → Machine Translation for Inventory Documents",
+              desc: "Reorders OCR text and translates to Chinese; evaluates with BLEU.",
+              link: "https://github.com/uddipan77/OCR-to-Machine-Translation",
+            },
+            {
+              name: "Generative AI Cold-Email Generator",
+              desc: "Llama 3.1, LangChain, ChromaDB, Streamlit, Groq Cloud.",
+              link: "https://github.com/uddipan77/generate_email_with_llm",
+            },
+          ].map((p) => (
+            <a
+              key={p.name}
+              href={p.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5"
+            >
+              <h3 className="text-xl md:text-2xl font-semibold">{p.name}</h3>
+              <p className="mt-3 opacity-90">{p.desc}</p>
+            </a>
+          ))}
+        </div>
+      </Section>
+
+      {/* SKILLS */}
+      <Section id="skills" title="Skills">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">Programming & Data</h4>
+            <div className="flex flex-wrap gap-2">
+              {["Python", "SQL", "TypeScript", "Unix Shell", "Pydantic", "ONNX"].map((s) => (
+                <Chip key={s}>{s}</Chip>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">ML/DL & NLP</h4>
+            <div className="flex flex-wrap gap-2">
+              {[
+                "PyTorch",
+                "PyTorch Lightning",
+                "scikit-learn",
+                "XGBoost",
+                "statsmodels",
+                "spaCy",
+                "NLTK",
+                "HF Transformers",
+                "LangChain",
+                "LangGraph",
+                "vLLM",
+              ].map((s) => (
+                <Chip key={s}>{s}</Chip>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">MLOps & Experimentation</h4>
+            <div className="flex flex-wrap gap-2">
+              {["MLflow", "Weights & Biases", "TensorBoard", "Optuna", "ZenML", "Docker", "GitHub Actions"].map((s) => (
+                <Chip key={s}>{s}</Chip>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">Cloud & BI</h4>
+            <div className="flex flex-wrap gap-2">
+              {["Azure ML", "Azure AI Foundry", "Azure OpenAI", "Azure Blob Storage", "HPC", "Power BI", "Power Automate", "Power Apps"].map((s) => (
+                <Chip key={s}>{s}</Chip>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* EXPERIENCE */}
+      <Section id="experience" title="Experience">
+        <div className="space-y-8">
+          {[
+            {
+              role: "Working Student — Applied AI Engineer",
+              org: "Siemens AG, Germany",
+              time: "May 2025 — Present",
+              bullets: [
+                "Developing an AI agent for question-answering over Excel data.",
+                "Azure ML, Azure OpenAI, LangChain, PyTorch, Azure AI Search.",
+              ],
+            },
+            {
+              role: "Working Student — Data Analyst",
+              org: "Schaeffler, Germany",
+              time: "Sep 2021 — Jun 2022",
+              bullets: [
+                "Built interactive Power BI dashboards; data wrangling & modeling.",
+                "Automations with Microsoft 365 & Power Platform.",
+              ],
+            },
+            {
+              role: "Data Engineer / Data Analyst",
+              org: "Tata Consultancy Services, Kolkata, India",
+              time: "Sep 2018 — Aug 2021",
+              bullets: [
+                "ETL pipelines in Ab-initio; Autosys job orchestration.",
+                "Optimized SQL for data integration; financial analytics (MRR/ARR/P&L).",
+              ],
+            },
+          ].map((x) => (
+            <div key={x.role} className="rounded-2xl border p-7 md:p-8">
+              <h3 className="text-xl md:text-2xl font-semibold">{x.role}</h3>
+              <p className="opacity-90">
+                {x.org} • {x.time}
+              </p>
+              <ul className="list-disc pl-6 mt-2 opacity-90">
+                {x.bullets.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* EDUCATION */}
+      <Section id="education" title="Education">
+        <div className="space-y-8">
+          <div className="rounded-2xl border p-7 md:p-8">
+            <h3 className="text-xl md:text-2xl font-semibold">M.Sc. in Data Science (AI & ML)</h3>
+            <p className="opacity-90">Friedrich-Alexander-Universität Erlangen-Nürnberg — Erlangen, Germany</p>
+            <p className="opacity-75">2022 — Present</p>
+          </div>
+          <div className="rounded-2xl border p-7 md:p-8">
+            <h3 className="text-xl md:text-2xl font-semibold">B.Tech. in Computer Science & Engineering</h3>
+            <p className="opacity-90">Maulana Abul Kalam Azad University of Technology — Kolkata, India</p>
+            <p className="opacity-75">2014 — 2018</p>
+          </div>
+        </div>
+      </Section>
+
+      {/* CONTACT */}
+      <Section id="contact" title="Contact">
+        <ContactForm onToast={showToast} />
+        <p className="opacity-70 text-sm mt-8">
+          © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and hosted on GitHub
+          Pages.
+        </p>
+      </Section>
+
+      <Toast show={toast.show} kind={toast.kind} message={toast.message} />
+    </main>
+  );
+}
+
+/** Contact form with AJAX submit + toast */
+function ContactForm({ onToast }: { onToast: (k: "success" | "error", m: string) => void }) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (loading) return;
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    // Optional: subject visible in Formspree dashboard
+    formData.append("_subject", "New message from portfolio site");
+
+    try {
+      setLoading(true);
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        body: formData,
+        headers: { Accept: "application/json" },
+      });
+
+      if (res.ok) {
+        form.reset();
+        onToast("success", "Message sent. I’ll get back to you soon!");
+      } else {
+        onToast("error", "Something went wrong. Please try again.");
+      }
+    } catch {
+      onToast("error", "Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form className="max-w-2xl" onSubmit={handleSubmit}>
+      <label className="block mb-2 text-sm">Your name</label>
+      <input
+        name="name"
+        type="text"
+        required
+        placeholder="Jane Doe"
+        className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+      />
+
+      <label className="block mb-2 text-sm">Your email</label>
+      <input
+        name="email"
+        type="email"
+        required
+        placeholder="you@example.com"
+        className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+      />
+
+      <label className="block mb-2 text-sm">Message</label>
+      <textarea
+        name="message"
+        rows={6}
+        required
+        placeholder="How can I help?"
+        className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+      />
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="rounded-full border px-5 py-2.5 text-base font-medium hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-60"
+      >
+        {loading ? "Sending…" : "Submit"}
+      </button>
+    </form>
+  );
+}

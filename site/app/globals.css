@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Light defaults */
+:root {
+  --bg: #ffffff;
+  --fg: #171717;
+}
+
+/* Dark when .dark is on <html> or <body> */
+.dark {
+  --bg: #0a0a0a;
+  --fg: #ededed;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  /* avoid overriding Tailwind’s fonts unless you mean to */
+}
