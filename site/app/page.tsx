@@ -20,7 +20,6 @@ const Section = ({
   children: React.ReactNode;
 }) => (
   <section id={id} className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 scroll-mt-24">
-    {/* Full-length underline directly under the heading text */}
     <h2 className="relative inline-block text-5xl md:text-6xl font-semibold mb-12">
       {title}
       <span className="absolute left-0 -bottom-2 block h-[3px] w-full rounded-full bg-gradient-to-r from-pink-500 via-purple-400 to-blue-400" />
@@ -77,10 +76,11 @@ function ThemeToggle() {
 export default function Page() {
   const [active, setActive] = useState<SectionId>("about");
 
-  // ✅ Type-safe: allow missing keys while computing offsets
+  // 👇 Base prefix ONLY when deployed to GH Pages
+  const BASE = process.env.NODE_ENV === "production" ? "/portfolio_Uddipan" : "";
+
   const offsetsRef = useRef<Partial<Record<SectionId, number>>>({});
 
-  // Scroll-spy with “bottom-of-page = contact” guarantee
   useEffect(() => {
     const computeOffsets = () => {
       const m: Partial<Record<SectionId, number>> = {};
@@ -92,14 +92,13 @@ export default function Page() {
     };
 
     const onScroll = () => {
-      const y = window.scrollY + 130; // header height offset
+      const y = window.scrollY + 130;
       const doc = document.documentElement;
       const atBottom = Math.ceil(window.scrollY + window.innerHeight) >= doc.scrollHeight - 2;
       if (atBottom) {
         setActive("contact");
         return;
       }
-
       let current: SectionId = "about";
       for (const id of SECTION_IDS) {
         const off = offsetsRef.current[id];
@@ -114,7 +113,6 @@ export default function Page() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", computeOffsets);
     window.addEventListener("load", computeOffsets);
-
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", computeOffsets);
@@ -127,13 +125,11 @@ export default function Page() {
     []
   );
 
-  // Base classes for the nav link underline (full width of the link)
   const linkBase =
     "relative pb-2 transition-colors hover:opacity-90 after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:rounded-full after:bg-gradient-to-r after:from-pink-500 after:via-purple-400 after:to-blue-400 after:transition-all after:duration-300";
 
   return (
     <main className="min-h-screen">
-      {/* Sticky, always-visible nav at the very top */}
       <header className="sticky top-0 z-50 backdrop-blur bg-white/75 dark:bg-black/50 border-b border-black/10 dark:border-white/10">
         <nav className="max-w-[1400px] mx-auto px-6 md:px-12 py-3 md:py-4 flex items-center gap-7 text-base md:text-lg">
           {navLinks.map(({ id, label }) => {
@@ -172,7 +168,7 @@ export default function Page() {
         <div className="mt-6 flex items-center justify-center gap-4">
           <a
             className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-base md:text-lg font-medium hover:bg-black/5 dark:hover:bg-white/10"
-            href="assets/files/Resume_Uddipan.pdf"
+            href={`${BASE}/assets/files/Resume_Uddipan.pdf`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -215,9 +211,9 @@ export default function Page() {
             </ul>
           </div>
           <div className="flex justify-center md:justify-end">
-            {/* ✅ Next/Image to satisfy @next/next/no-img-element */}
+            {/* ✅ Use BASE so GH Pages gets /portfolio_Uddipan/images/profile.png */}
             <Image
-              src="/images/profile.png"
+              src={`${BASE}/images/profile.png`}
               alt="Uddipan Basu Bir"
               width={288}
               height={288}
