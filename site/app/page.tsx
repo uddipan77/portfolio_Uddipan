@@ -2,13 +2,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
-
-/* ====== CHANGE THIS TO YOUR OWN FORMSPREE ENDPOINT ====== */
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/xyzdbayk";
-/* ======================================================== */
 
 const SECTION_IDS = ["about", "projects", "skills", "experience", "education", "contact"] as const;
 type SectionId = (typeof SECTION_IDS)[number];
@@ -43,10 +40,7 @@ function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as
-      | "light"
-      | "dark"
-      | null;
+    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as "light" | "dark" | null;
     const prefersDark =
       typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
     const initial = stored ?? (prefersDark ? "dark" : "light");
@@ -80,31 +74,16 @@ function ThemeToggle() {
   );
 }
 
-/** Simple toast */
-function Toast({ show, kind, message }: { show: boolean; kind: "success" | "error"; message: string }) {
-  if (!show) return null;
-  return (
-    <div
-      className={[
-        "fixed left-1/2 -translate-x-1/2 bottom-6 z-50 rounded-full px-4 py-2 shadow-lg text-sm",
-        kind === "success"
-          ? "bg-emerald-600 text-white"
-          : "bg-rose-600 text-white",
-      ].join(" ")}
-    >
-      {message}
-    </div>
-  );
-}
-
 export default function Page() {
   const [active, setActive] = useState<SectionId>("about");
-  const offsetsRef = useRef<Record<SectionId, number>>({} as any);
+
+  // ✅ Type-safe: allow missing keys while computing offsets
+  const offsetsRef = useRef<Partial<Record<SectionId, number>>>({});
 
   // Scroll-spy with “bottom-of-page = contact” guarantee
   useEffect(() => {
     const computeOffsets = () => {
-      const m: Record<SectionId, number> = {} as any;
+      const m: Partial<Record<SectionId, number>> = {};
       SECTION_IDS.forEach((id) => {
         const el = document.getElementById(id);
         if (el) m[id] = el.getBoundingClientRect().top + window.scrollY;
@@ -123,7 +102,8 @@ export default function Page() {
 
       let current: SectionId = "about";
       for (const id of SECTION_IDS) {
-        if (y >= (offsetsRef.current[id] ?? Number.POSITIVE_INFINITY)) current = id;
+        const off = offsetsRef.current[id];
+        if (typeof off === "number" && y >= off) current = id;
         else break;
       }
       setActive(current);
@@ -133,7 +113,6 @@ export default function Page() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", computeOffsets);
-    // Recompute once images (e.g., profile) load
     window.addEventListener("load", computeOffsets);
 
     return () => {
@@ -151,18 +130,6 @@ export default function Page() {
   // Base classes for the nav link underline (full width of the link)
   const linkBase =
     "relative pb-2 transition-colors hover:opacity-90 after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:rounded-full after:bg-gradient-to-r after:from-pink-500 after:via-purple-400 after:to-blue-400 after:transition-all after:duration-300";
-
-  // Toast state for contact form
-  const [toast, setToast] = useState<{ show: boolean; kind: "success" | "error"; message: string }>({
-    show: false,
-    kind: "success",
-    message: "",
-  });
-
-  const showToast = (kind: "success" | "error", message: string) => {
-    setToast({ show: true, kind, message });
-    setTimeout(() => setToast((t) => ({ ...t, show: false })), 3200);
-  };
 
   return (
     <main className="min-h-screen">
@@ -222,12 +189,7 @@ export default function Page() {
           >
             <Linkedin className="w-5 h-5" />
           </Link>
-          <Link
-            href="https://github.com/uddipan77"
-            target="_blank"
-            className="p-2 rounded-full border"
-            rel="noopener noreferrer"
-          >
+          <Link href="https://github.com/uddipan77" target="_blank" className="p-2 rounded-full border" rel="noopener noreferrer">
             <Github className="w-5 h-5" />
           </Link>
           <Link href="mailto:uddipanbb95@gmail.com" className="p-2 rounded-full border">
@@ -253,9 +215,13 @@ export default function Page() {
             </ul>
           </div>
           <div className="flex justify-center md:justify-end">
-            <img
-              src="images/profile.png"
+            {/* ✅ Next/Image to satisfy @next/next/no-img-element */}
+            <Image
+              src="/images/profile.png"
               alt="Uddipan Basu Bir"
+              width={288}
+              height={288}
+              priority
               className="w-48 h-48 md:w-72 md:h-72 rounded-full object-cover ring-2 ring-black/10 dark:ring-white/20"
             />
           </div>
@@ -416,88 +382,29 @@ export default function Page() {
 
       {/* CONTACT */}
       <Section id="contact" title="Contact">
-        <ContactForm onToast={showToast} />
+        <form className="max-w-2xl" action="https://formspree.io/f/mayzkxxx" method="POST">
+          <label className="block mb-2 text-sm">Email</label>
+          <input
+            name="email"
+            type="email"
+            required
+            className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+          />
+          <label className="block mb-2 text-sm">Message</label>
+          <textarea
+            name="message"
+            rows={5}
+            required
+            className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+          />
+          <button className="rounded-full border px-5 py-2.5 text-base font-medium hover:bg-black/5 dark:hover:bg-white/10">
+            Submit
+          </button>
+        </form>
         <p className="opacity-70 text-sm mt-8">
-          © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and hosted on GitHub
-          Pages.
+          © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and hosted on GitHub Pages.
         </p>
       </Section>
-
-      <Toast show={toast.show} kind={toast.kind} message={toast.message} />
     </main>
-  );
-}
-
-/** Contact form with AJAX submit + toast */
-function ContactForm({ onToast }: { onToast: (k: "success" | "error", m: string) => void }) {
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (loading) return;
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    // Optional: subject visible in Formspree dashboard
-    formData.append("_subject", "New message from portfolio site");
-
-    try {
-      setLoading(true);
-      const res = await fetch(FORMSPREE_ENDPOINT, {
-        method: "POST",
-        body: formData,
-        headers: { Accept: "application/json" },
-      });
-
-      if (res.ok) {
-        form.reset();
-        onToast("success", "Message sent. I’ll get back to you soon!");
-      } else {
-        onToast("error", "Something went wrong. Please try again.");
-      }
-    } catch {
-      onToast("error", "Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <form className="max-w-2xl" onSubmit={handleSubmit}>
-      <label className="block mb-2 text-sm">Your name</label>
-      <input
-        name="name"
-        type="text"
-        required
-        placeholder="Jane Doe"
-        className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
-      />
-
-      <label className="block mb-2 text-sm">Your email</label>
-      <input
-        name="email"
-        type="email"
-        required
-        placeholder="you@example.com"
-        className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
-      />
-
-      <label className="block mb-2 text-sm">Message</label>
-      <textarea
-        name="message"
-        rows={6}
-        required
-        placeholder="How can I help?"
-        className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
-      />
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-full border px-5 py-2.5 text-base font-medium hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-60"
-      >
-        {loading ? "Sending…" : "Submit"}
-      </button>
-    </form>
   );
 }
