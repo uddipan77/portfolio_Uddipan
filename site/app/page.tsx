@@ -12,6 +12,10 @@ type SectionId = (typeof SECTION_IDS)[number];
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/xyzdbayk";
 
+type Toast = { kind: "success" | "error"; text: string } | null;
+type FormspreeError = { message?: string; field?: string; code?: string };
+type FormspreeResponse = { errors?: FormspreeError[] };
+
 const Section = ({
   id,
   title,
@@ -41,7 +45,10 @@ function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as "light" | "dark" | null;
+    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as
+      | "light"
+      | "dark"
+      | null;
     const prefersDark =
       typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
     const initial = stored ?? (prefersDark ? "dark" : "light");
@@ -132,7 +139,7 @@ export default function Page() {
 
   // ---------- Contact form (Formspree) state ----------
   const [sending, setSending] = useState(false);
-  const [toast, setToast] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [toast, setToast] = useState<Toast>(null);
 
   const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -153,9 +160,9 @@ export default function Page() {
         form.reset();
         setToast({ kind: "success", text: "Message sent! I’ll get back to you soon." });
       } else {
-        const j = await res.json().catch(() => ({}));
+        const j = (await res.json().catch(() => ({}))) as FormspreeResponse;
         const msg =
-          j?.errors?.map((x: any) => x.message).join(", ") ||
+          j.errors?.map((x) => x.message).filter(Boolean).join(", ") ??
           "Could not send message. Please try again.";
         setToast({ kind: "error", text: msg });
       }
@@ -226,7 +233,12 @@ export default function Page() {
           >
             <Linkedin className="w-5 h-5" />
           </Link>
-          <Link href="https://github.com/uddipan77" target="_blank" className="p-2 rounded-full border" rel="noopener noreferrer">
+          <Link
+            href="https://github.com/uddipan77"
+            target="_blank"
+            className="p-2 rounded-full border"
+            rel="noopener noreferrer"
+          >
             <Github className="w-5 h-5" />
           </Link>
           <Link href="mailto:uddipanbb95@gmail.com" className="p-2 rounded-full border">
@@ -338,15 +350,26 @@ export default function Page() {
           <div>
             <h4 className="font-medium mb-3 text-lg md:text-xl">MLOps & Experimentation</h4>
             <div className="flex flex-wrap gap-2">
-              {["MLflow", "Weights & Biases", "TensorBoard", "Optuna", "ZenML", "Docker", "GitHub Actions"].map((s) => (
-                <Chip key={s}>{s}</Chip>
-              ))}
+              {["MLflow", "Weights & Biases", "TensorBoard", "Optuna", "ZenML", "Docker", "GitHub Actions"].map(
+                (s) => (
+                  <Chip key={s}>{s}</Chip>
+                )
+              )}
             </div>
           </div>
           <div>
             <h4 className="font-medium mb-3 text-lg md:text-xl">Cloud & BI</h4>
             <div className="flex flex-wrap gap-2">
-              {["Azure ML", "Azure AI Foundry", "Azure OpenAI", "Azure Blob Storage", "HPC", "Power BI", "Power Automate", "Power Apps"].map((s) => (
+              {[
+                "Azure ML",
+                "Azure AI Foundry",
+                "Azure OpenAI",
+                "Azure Blob Storage",
+                "HPC",
+                "Power BI",
+                "Power Automate",
+                "Power Apps",
+              ].map((s) => (
                 <Chip key={s}>{s}</Chip>
               ))}
             </div>
@@ -461,7 +484,8 @@ export default function Page() {
         </form>
 
         <p className="opacity-70 text-sm mt-8">
-          © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and hosted on GitHub Pages.
+          © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and hosted on GitHub
+          Pages.
         </p>
       </Section>
 
