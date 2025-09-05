@@ -10,6 +10,8 @@ import { Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
 const SECTION_IDS = ["about", "projects", "skills", "experience", "education", "contact"] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xyzdbayk";
+
 const Section = ({
   id,
   title,
@@ -127,6 +129,45 @@ export default function Page() {
 
   const linkBase =
     "relative pb-2 transition-colors hover:opacity-90 after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:rounded-full after:bg-gradient-to-r after:from-pink-500 after:via-purple-400 after:to-blue-400 after:transition-all after:duration-300";
+
+  // ---------- Contact form (Formspree) state ----------
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (sending) return;
+    setSending(true);
+
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" },
+      });
+
+      if (res.ok) {
+        form.reset();
+        setToast({ kind: "success", text: "Message sent! I’ll get back to you soon." });
+      } else {
+        const j = await res.json().catch(() => ({}));
+        const msg =
+          j?.errors?.map((x: any) => x.message).join(", ") ||
+          "Could not send message. Please try again.";
+        setToast({ kind: "error", text: msg });
+      }
+    } catch {
+      setToast({ kind: "error", text: "Network error. Please try again." });
+    } finally {
+      setSending(false);
+      // Auto-hide toast after 4s
+      setTimeout(() => setToast(null), 4000);
+    }
+  };
+  // ----------------------------------------------------
 
   return (
     <main className="min-h-screen">
@@ -378,29 +419,69 @@ export default function Page() {
 
       {/* CONTACT */}
       <Section id="contact" title="Contact">
-        <form className="max-w-2xl" action="https://formspree.io/f/mayzkxxx" method="POST">
+        <form className="max-w-2xl" onSubmit={handleContactSubmit} noValidate>
+          {/* Honeypot to reduce spam */}
+          <input type="text" name="_gotcha" className="hidden" tabIndex={-1} autoComplete="off" />
+          {/* Optional subject line */}
+          <input type="hidden" name="_subject" value="New message from portfolio site" />
+
+          <label className="block mb-2 text-sm">Name</label>
+          <input
+            name="name"
+            type="text"
+            required
+            className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+            placeholder="Your name"
+          />
+
           <label className="block mb-2 text-sm">Email</label>
           <input
             name="email"
             type="email"
             required
             className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+            placeholder="you@example.com"
           />
+
           <label className="block mb-2 text-sm">Message</label>
           <textarea
             name="message"
             rows={5}
             required
             className="w-full mb-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 border p-3"
+            placeholder="Say hello…"
           />
-          <button className="rounded-full border px-5 py-2.5 text-base font-medium hover:bg-black/5 dark:hover:bg-white/10">
-            Submit
+
+          <button
+            disabled={sending}
+            className="rounded-full border px-5 py-2.5 text-base font-medium hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-60"
+          >
+            {sending ? "Sending…" : "Submit"}
           </button>
         </form>
+
         <p className="opacity-70 text-sm mt-8">
           © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and hosted on GitHub Pages.
         </p>
       </Section>
+
+      {/* Bottom toast */}
+      {toast && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          className={[
+            "fixed left-1/2 -translate-x-1/2 bottom-6 z-[60] px-4 py-3 rounded-full border shadow-lg",
+            toast.kind === "success"
+              ? "bg-green-500/10 border-green-400 text-green-300"
+              : "bg-red-500/10 border-red-400 text-red-300",
+          ].join(" ")}
+          aria-live="polite"
+        >
+          {toast.text}
+        </motion.div>
+      )}
     </main>
   );
 }
