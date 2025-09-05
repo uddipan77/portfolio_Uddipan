@@ -1,12 +1,13 @@
-// site/next.config.ts
 import type { NextConfig } from "next";
+
+const isProd = process.env.NODE_ENV === "production";
+const repo = "portfolio_Uddipan";
 
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: "/portfolio_Uddipan",
-  assetPrefix: "/portfolio_Uddipan/",
+  basePath: isProd ? `/${repo}` : "",
+  assetPrefix: isProd ? `/${repo}/` : "",
   images: { unoptimized: true },
-  // eslint: { ignoreDuringBuilds: true }, // optional
 };
 
 export default nextConfig;
