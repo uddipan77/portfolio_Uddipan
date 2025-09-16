@@ -306,6 +306,11 @@ export default function Page() {
               desc:  "Private, fully local RAG for Germany’s paperwork pain: convert docs to PDFs, OCR text, store embeddings in OpenSearch, and query with Ollama—secure and offline.",
               link: "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
           },
+          {
+              name: "Fullstack Customer Churn Prediction App",
+              desc:  "A full-stack customer churn prediction app with a FastAPI backend and a ReactJS frontend. It supports batch predictions by uploading an Excel file (predictions for all rows) and single-customer predictions via a simple form. You can choose from multiple trained models (KNN, SVM, Random Forest, Logistic Regression, Decision Tree, AdaBoost) to run your predictions.",
+              link: "https://github.com/uddipan77/fullstack_customer_churn",
+          },
           ].map((p) => (
             <a
               key={p.name}
