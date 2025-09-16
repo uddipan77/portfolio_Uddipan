@@ -301,6 +301,11 @@ export default function Page() {
               desc: "Llama 3.1, LangChain, ChromaDB, Streamlit, Groq Cloud.",
               link: "https://github.com/uddipan77/generate_email_with_llm",
             },
+            {
+              name: "Local LLM-based RAG System for Your Personal Documents",
+              desc:  "Private, fully local RAG for Germany’s paperwork pain: convert docs to PDFs, OCR text, store embeddings in OpenSearch, and query with Ollama—secure and offline.",
+              link: "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
+          },
           ].map((p) => (
             <a
               key={p.name}
