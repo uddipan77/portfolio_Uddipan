@@ -216,7 +216,7 @@ export default function Page() {
         <div className="mt-6 flex items-center justify-center gap-4">
           <a
             className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-base md:text-lg font-medium hover:bg-black/5 dark:hover:bg-white/10"
-            href={`${BASE}/assets/files/Resume_Uddipan.pdf`}
+            href={`${BASE}/assets/files/ResumeUddipan.pdf`}
             target="_blank"
             rel="noopener noreferrer"
           >
