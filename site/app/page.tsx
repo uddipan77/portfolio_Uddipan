@@ -7,7 +7,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
 
-const SECTION_IDS = ["about", "projects", "skills", "experience", "education", "contact"] as const;
+// 🔹 Include "certificates" in the nav order
+const SECTION_IDS = ["about", "projects", "certificates", "skills", "experience", "education", "contact"] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/xyzdbayk";
@@ -16,15 +17,88 @@ type Toast = { kind: "success" | "error"; text: string } | null;
 type FormspreeError = { message?: string; field?: string; code?: string };
 type FormspreeResponse = { errors?: FormspreeError[] };
 
-const Section = ({
-  id,
-  title,
-  children,
-}: {
-  id: SectionId;
+/* -------------------- Data -------------------- */
+type Cert = {
   title: string;
-  children: React.ReactNode;
-}) => (
+  issuer?: string;
+  year?: string;
+  file?: string;    // optional PDF path in /public
+  image?: string;   // optional preview image path in /public
+  verify?: string;  // optional verification URL
+};
+
+// PDFs live in /public/assets/certificates ; images in /public/images/certificates
+const CERTS: Cert[] = [
+  // 👇 This one uses only an IMAGE (its own tile)
+  {
+    title: "MCP Certificate (Preview)",
+    issuer: "Microsoft",
+    year: "—",
+    image: "/images/certificates/mcp.webp",
+    // file: undefined,
+  },
+  // 👇 These use PDFs (and could also have an image if you add one later)
+  {
+    title: "LangChain Academy — Deep Research with LangGraph",
+    issuer: "LangChain",
+    year: "2025",
+    file: "/assets/certificates/langchain-academy-deep-research-langgraph.pdf",
+  },
+  {
+    title: "LangSmith Fundamentals",
+    issuer: "LangChain",
+    year: "2025",
+    file: "/assets/certificates/langsmith.pdf",
+  },
+  {
+    title: "Docker Essentials",
+    issuer: "Docker",
+    year: "2025",
+    file: "/assets/certificates/docker_certificate.pdf",
+  },
+];
+
+const PROJECTS = {
+  research: [
+    {
+      name: "AI-FAPS: Multi-Modal · Multi-View · Multi-Task Pipeline",
+      desc: "Deep learning pipeline for quality monitoring in industrial manufacturing.",
+      link: "https://github.com/uddipan77/AI-FAPS-Multi-Modal-View-Task-Pipeline",
+    },
+    {
+      name: "Self/Semi-Supervised Image Classification (Industrial Inspection)",
+      desc: "Comparative assessment of self-, semi-, and combined learning approaches.",
+      link: "https://github.com/uddipan77/ai-faps-self-semi-combined-dl-pipeline-industrial-inspection",
+    },
+  ],
+  applied: [
+    {
+      name: "OCR → Machine Translation for Inventory Documents",
+      desc: "Reorders OCR text and translates to Chinese; evaluates with BLEU.",
+      link: "https://github.com/uddipan77/OCR-to-Machine-Translation",
+    },
+    {
+      name: "Generative AI Cold-Email Generator",
+      desc: "Llama 3.1, LangChain, ChromaDB, Streamlit, Groq Cloud.",
+      link: "https://github.com/uddipan77/generate_email_with_llm",
+    },
+    {
+      name: "Local LLM-based RAG System for Your Personal Documents",
+      desc:
+        "Private, fully local RAG for Germany’s paperwork pain: convert docs to PDFs, OCR text, store embeddings in OpenSearch, and query with Ollama—secure and offline.",
+      link: "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
+    },
+    {
+      name: "Fullstack Customer Churn Prediction App",
+      desc:
+        "FastAPI + React; batch & single predictions; multiple models (KNN, SVM, RF, LR, DT, AdaBoost).",
+      link: "https://github.com/uddipan77/fullstack_customer_churn",
+    },
+  ],
+} as const;
+/* --------------------------------------------- */
+
+const Section = ({ id, title, children }: { id: SectionId; title: string; children: React.ReactNode }) => (
   <section id={id} className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 scroll-mt-24">
     <h2 className="relative inline-block text-5xl md:text-6xl font-semibold mb-12">
       {title}
@@ -45,10 +119,7 @@ function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as
-      | "light"
-      | "dark"
-      | null;
+    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as "light" | "dark" | null;
     const prefersDark =
       typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
     const initial = stored ?? (prefersDark ? "dark" : "light");
@@ -73,12 +144,50 @@ function ThemeToggle() {
       suppressHydrationWarning
       title={mounted ? (theme === "dark" ? "Switch to light" : "Switch to dark") : "Toggle theme"}
     >
-      {mounted ? (
-        theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
-      ) : (
-        <span className="inline-block w-5 h-5" />
-      )}
+      {mounted ? (theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />) : <span className="inline-block w-5 h-5" />}
     </button>
+  );
+}
+
+/* ---------- Projects tab UI ---------- */
+function ProjectsTabbed() {
+  const [tab, setTab] = useState<"research" | "applied">("research");
+  const tabs = [
+    { key: "research", label: "Research Projects" },
+    { key: "applied", label: "Applied & Industry Projects" },
+  ] as const;
+
+  return (
+    <div>
+      <div className="inline-flex rounded-full border p-1 mb-6">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-1.5 rounded-full text-sm md:text-base transition ${
+              tab === t.key ? "bg-black/5 dark:bg-white/10 font-medium" : "opacity-75 hover:opacity-100"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {PROJECTS[tab].map((p) => (
+          <a
+            key={p.name}
+            href={p.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5"
+          >
+            <h3 className="text-xl md:text-2xl font-semibold">{p.name}</h3>
+            <p className="mt-3 opacity-90">{p.desc}</p>
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -101,7 +210,11 @@ export default function Page() {
     };
 
     const onScroll = () => {
-      const y = window.scrollY + 130;
+      // ✅ use actual header height so the active link switches exactly when a section hits the top
+      const headerH =
+        (document.querySelector("header") as HTMLElement | null)?.getBoundingClientRect().height ?? 0;
+      const y = window.scrollY + headerH + 10; // small buffer
+
       const doc = document.documentElement;
       const atBottom = Math.ceil(window.scrollY + window.innerHeight) >= doc.scrollHeight - 2;
       if (atBottom) {
@@ -170,7 +283,6 @@ export default function Page() {
       setToast({ kind: "error", text: "Network error. Please try again." });
     } finally {
       setSending(false);
-      // Auto-hide toast after 4s
       setTimeout(() => setToast(null), 4000);
     }
   };
@@ -260,7 +372,7 @@ export default function Page() {
             </p>
             <ul className="list-disc pl-6 opacity-90 mt-5">
               <li>Currently exploring Vision-Language Models for structured text extraction (Master’s thesis).</li>
-              <li>Building an AI agent for question-answering directly over Excel data (Working Student @ Siemens AG).</li>
+              <li>Building multi AI agents for question-answering directly over multiple data sources (Working Student @ Siemens AG).</li>
             </ul>
           </div>
           <div className="flex justify-center md:justify-end">
@@ -279,49 +391,68 @@ export default function Page() {
 
       {/* PROJECTS */}
       <Section id="projects" title="Projects">
+        <ProjectsTabbed />
+      </Section>
+
+      {/* CERTIFICATES */}
+      <Section id="certificates" title="Certificates & Credentials">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {[
-            {
-              name: "AI-FAPS: Multi-Modal · Multi-View · Multi-Task Pipeline",
-              desc: "Deep learning pipeline for quality monitoring in industrial manufacturing.",
-              link: "https://github.com/uddipan77/AI-FAPS-Multi-Modal-View-Task-Pipeline",
-            },
-            {
-              name: "Self/Semi-Supervised Image Classification (Industrial Inspection)",
-              desc: "Comparative assessment of self-, semi-, and combined learning approaches.",
-              link: "https://github.com/uddipan77/ai-faps-self-semi-combined-dl-pipeline-industrial-inspection",
-            },
-            {
-              name: "OCR → Machine Translation for Inventory Documents",
-              desc: "Reorders OCR text and translates to Chinese; evaluates with BLEU.",
-              link: "https://github.com/uddipan77/OCR-to-Machine-Translation",
-            },
-            {
-              name: "Generative AI Cold-Email Generator",
-              desc: "Llama 3.1, LangChain, ChromaDB, Streamlit, Groq Cloud.",
-              link: "https://github.com/uddipan77/generate_email_with_llm",
-            },
-            {
-              name: "Local LLM-based RAG System for Your Personal Documents",
-              desc:  "Private, fully local RAG for Germany’s paperwork pain: convert docs to PDFs, OCR text, store embeddings in OpenSearch, and query with Ollama—secure and offline.",
-              link: "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
-          },
-          {
-              name: "Fullstack Customer Churn Prediction App",
-              desc:  "A full-stack customer churn prediction app with a FastAPI backend and a ReactJS frontend. It supports batch predictions by uploading an Excel file (predictions for all rows) and single-customer predictions via a simple form. You can choose from multiple trained models (KNN, SVM, Random Forest, Logistic Regression, Decision Tree, AdaBoost) to run your predictions.",
-              link: "https://github.com/uddipan77/fullstack_customer_churn",
-          },
-          ].map((p) => (
-            <a
-              key={p.name}
-              href={p.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5"
-            >
-              <h3 className="text-xl md:text-2xl font-semibold">{p.name}</h3>
-              <p className="mt-3 opacity-90">{p.desc}</p>
-            </a>
+          {CERTS.map((c) => (
+            <div key={c.title} className="rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5">
+              {/* Optional top preview image */}
+              {c.image && (
+                <a href={`${BASE}${c.image}`} target="_blank" rel="noopener noreferrer" className="block mb-4">
+                  <Image
+                    src={`${BASE}${c.image}`}
+                    alt={c.title}
+                    width={800}
+                    height={400}
+                    className="w-full h-36 md:h-40 object-cover rounded-lg ring-1 ring-white/15"
+                    priority={false}
+                  />
+                </a>
+              )}
+
+              <h3 className="text-lg md:text-xl font-semibold">{c.title}</h3>
+              {(c.issuer || c.year) && (
+                <p className="opacity-80 text-sm mt-1">
+                  {c.issuer ?? ""}{c.issuer && c.year ? " • " : ""}{c.year ?? ""}
+                </p>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                {c.image && (
+                  <a
+                    href={`${BASE}${c.image}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    View Image
+                  </a>
+                )}
+                {c.file && (
+                  <a
+                    href={`${BASE}${c.file}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    Download PDF
+                  </a>
+                )}
+                {c.verify && (
+                  <a
+                    href={c.verify}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    Verify
+                  </a>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       </Section>
@@ -332,7 +463,7 @@ export default function Page() {
           <div>
             <h4 className="font-medium mb-3 text-lg md:text-xl">Programming & Data</h4>
             <div className="flex flex-wrap gap-2">
-              {["Python", "SQL", "TypeScript", "Unix Shell", "Pydantic", "ONNX"].map((s) => (
+              {["Python", "SQL", "PySpark", "Airflow", "TypeScript", "Unix Shell Scripting", "Pydantic", "ONNX"].map((s) => (
                 <Chip key={s}>{s}</Chip>
               ))}
             </div>
@@ -396,8 +527,8 @@ export default function Page() {
               org: "Siemens AG, Germany",
               time: "May 2025 — Present",
               bullets: [
-                "Developing an AI agent for question-answering over Excel data.",
-                "Azure ML, Azure OpenAI, LangChain, PyTorch, Azure AI Search.",
+                "Developing AI agents for question-answering over multiple data sources and integrate in MS Teams.",
+                "Azure ML, Azure OpenAI, LangChain, PyTorch, Azure AI Search, Postman Collection.",
               ],
             },
             {
@@ -414,8 +545,9 @@ export default function Page() {
               org: "Tata Consultancy Services, Kolkata, India",
               time: "Sep 2018 — Aug 2021",
               bullets: [
-                "ETL pipelines in Ab-initio; Autosys job orchestration.",
-                "Optimized SQL for data integration; financial analytics (MRR/ARR/P&L).",
+                "ETL pipelines in Ab-initio, Autosys job orchestration.",
+                "Migration to PySpark and Airflow.",
+                "Optimized SQL for data integration, financial analytics (MRR/ARR/P&L).",
               ],
             },
           ].map((x) => (
