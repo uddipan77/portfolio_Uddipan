@@ -7,8 +7,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
 
-// 🔹 Include "certificates" in the nav order
-const SECTION_IDS = ["about", "projects", "certificates", "skills", "experience", "education", "contact"] as const;
+// 🔹 Include "certificates" in the nav order so scroll-spy highlights it
+const SECTION_IDS = [
+  "about",
+  "projects",
+  "certificates",
+  "skills",
+  "experience",
+  "education",
+  "contact",
+] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/xyzdbayk";
@@ -22,22 +30,19 @@ type Cert = {
   title: string;
   issuer?: string;
   year?: string;
-  file?: string;    // optional PDF path in /public
-  image?: string;   // optional preview image path in /public
-  verify?: string;  // optional verification URL
+  file?: string; // optional PDF path in /public
+  image?: string; // optional preview image path in /public
+  verify?: string; // optional verification URL
 };
 
 // PDFs live in /public/assets/certificates ; images in /public/images/certificates
 const CERTS: Cert[] = [
-  // 👇 This one uses only an IMAGE (its own tile)
   {
     title: "MCP Certificate (Preview)",
     issuer: "Microsoft",
     year: "—",
     image: "/images/certificates/mcp.webp",
-    // file: undefined,
   },
-  // 👇 These use PDFs (and could also have an image if you add one later)
   {
     title: "LangChain Academy — Deep Research with LangGraph",
     issuer: "LangChain",
@@ -66,9 +71,19 @@ const PROJECTS = {
       link: "https://github.com/uddipan77/AI-FAPS-Multi-Modal-View-Task-Pipeline",
     },
     {
-      name: "Self/Semi-Supervised Image Classification (Industrial Inspection)",
+      name:
+        "Self/Semi-Supervised Image Classification (Industrial Inspection)",
       desc: "Comparative assessment of self-, semi-, and combined learning approaches.",
-      link: "https://github.com/uddipan77/ai-faps-self-semi-combined-dl-pipeline-industrial-inspection",
+      link:
+        "https://github.com/uddipan77/ai-faps-self-semi-combined-dl-pipeline-industrial-inspection",
+    },
+    // 🔹 New research project
+    {
+      name: "Stock News Sentiment — Embedding Comparison",
+      desc:
+        "Word2Vec, GloVe, FastText, and Sentence Transformers compared for stock-news sentiment using tuned Random Forest classifiers.",
+      link:
+        "https://github.com/uddipan77/stock-sentiment-embeddings-comparison",
     },
   ],
   applied: [
@@ -85,21 +100,48 @@ const PROJECTS = {
     {
       name: "Local LLM-based RAG System for Your Personal Documents",
       desc:
-        "Private, fully local RAG for Germany’s paperwork pain: convert docs to PDFs, OCR text, store embeddings in OpenSearch, and query with Ollama—secure and offline.",
-      link: "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
+        "Private, fully local RAG: convert docs to PDF, OCR text, store embeddings in OpenSearch, query with Ollama—secure & offline.",
+      link:
+        "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
     },
     {
       name: "Fullstack Customer Churn Prediction App",
       desc:
-        "FastAPI + React; batch & single predictions; multiple models (KNN, SVM, RF, LR, DT, AdaBoost).",
+        "FastAPI + React; batch & single predictions; choose KNN, SVM, RF, LR, DT, AdaBoost.",
       link: "https://github.com/uddipan77/fullstack_customer_churn",
+    },
+    // 🔹 New applied projects
+    {
+      name:
+        "Multi-Agent Customer Support — LangFlow, Groq, Astra DB, Streamlit",
+      desc:
+        "Manager agent routes to FAQ and Order agents. PDF/CSV knowledge via Astra DB vectors; Groq LLM for fast inference.",
+      link:
+        "https://github.com/uddipan77/Customer-Support-Multi-Agent-System-with-Langflow-and-Streamlit",
+    },
+    {
+      name: "REHAU Digital Twin — Time-Series Anomaly & Forecasting",
+      desc:
+        "Real-time pipelines for polymer extrusion (Hopper/Extruder/Heating Zone 1): anomaly detection, forecasting, and process optimization.",
+      link: "https://github.com/uddipan77/REHAU-Digital-Twin",
     },
   ],
 } as const;
 /* --------------------------------------------- */
 
-const Section = ({ id, title, children }: { id: SectionId; title: string; children: React.ReactNode }) => (
-  <section id={id} className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 scroll-mt-24">
+const Section = ({
+  id,
+  title,
+  children,
+}: {
+  id: SectionId;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <section
+    id={id}
+    className="max-w-[1600px] mx-auto px-5 md:px-10 py-24 scroll-mt-24"
+  >
     <h2 className="relative inline-block text-5xl md:text-6xl font-semibold mb-12">
       {title}
       <span className="absolute left-0 -bottom-2 block h-[3px] w-full rounded-full bg-gradient-to-r from-pink-500 via-purple-400 to-blue-400" />
@@ -109,7 +151,9 @@ const Section = ({ id, title, children }: { id: SectionId; title: string; childr
 );
 
 const Chip = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-block rounded-full border px-3 py-1 text-sm">{children}</span>
+  <span className="inline-block rounded-full border px-3 py-1 text-sm">
+    {children}
+  </span>
 );
 
 /** Theme toggle — avoids hydration mismatch and persists preference */
@@ -119,9 +163,11 @@ function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as "light" | "dark" | null;
+    const stored = (typeof window !== "undefined" &&
+      localStorage.getItem("theme")) as "light" | "dark" | null;
     const prefersDark =
-      typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-color-scheme: dark)").matches;
     const initial = stored ?? (prefersDark ? "dark" : "light");
     setTheme(initial);
     document.documentElement.classList.toggle("dark", initial === "dark");
@@ -144,7 +190,11 @@ function ThemeToggle() {
       suppressHydrationWarning
       title={mounted ? (theme === "dark" ? "Switch to light" : "Switch to dark") : "Toggle theme"}
     >
-      {mounted ? (theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />) : <span className="inline-block w-5 h-5" />}
+      {mounted ? (
+        theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
+      ) : (
+        <span className="inline-block w-5 h-5" />
+      )}
     </button>
   );
 }
@@ -165,7 +215,9 @@ function ProjectsTabbed() {
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`px-4 py-1.5 rounded-full text-sm md:text-base transition ${
-              tab === t.key ? "bg-black/5 dark:bg-white/10 font-medium" : "opacity-75 hover:opacity-100"
+              tab === t.key
+                ? "bg-black/5 dark:bg-white/10 font-medium"
+                : "opacity-75 hover:opacity-100"
             }`}
           >
             {t.label}
@@ -210,9 +262,10 @@ export default function Page() {
     };
 
     const onScroll = () => {
-      // ✅ use actual header height so the active link switches exactly when a section hits the top
+      // use actual header height so the active link switches exactly at section top
       const headerH =
-        (document.querySelector("header") as HTMLElement | null)?.getBoundingClientRect().height ?? 0;
+        (document.querySelector("header") as HTMLElement | null)?.getBoundingClientRect().height ??
+        0;
       const y = window.scrollY + headerH + 10; // small buffer
 
       const doc = document.documentElement;
@@ -291,7 +344,7 @@ export default function Page() {
   return (
     <main className="min-h-screen">
       <header className="sticky top-0 z-50 backdrop-blur bg-white/75 dark:bg-black/50 border-b border-black/10 dark:border-white/10">
-        <nav className="max-w-[1400px] mx-auto px-6 md:px-12 py-3 md:py-4 flex items-center gap-7 text-base md:text-lg">
+        <nav className="max-w-[1600px] mx-auto px-5 md:px-10 py-3 md:py-4 flex items-center gap-7 text-base md:text-lg">
           {navLinks.map(({ id, label }) => {
             const isActive = active === id;
             return (
@@ -314,7 +367,7 @@ export default function Page() {
       </header>
 
       {/* HERO */}
-      <section className="max-w-[1400px] mx-auto px-6 md:px-12 min-h-[55vh] md:min-h-[60vh] flex flex-col items-center justify-center text-center">
+      <section className="max-w-[1600px] mx-auto px-5 md:px-10 min-h-[55vh] md:min-h-[60vh] flex flex-col items-center justify-center text-center">
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -323,7 +376,9 @@ export default function Page() {
           Uddipan Basu Bir
         </motion.h1>
 
-        <p className="mt-4 text-2xl md:text-3xl opacity-90">Data Scientist · Applied AI Engineer</p>
+        <p className="mt-4 text-2xl md:text-3xl opacity-90">
+          Data Scientist · Applied AI Engineer
+        </p>
 
         <div className="mt-6 flex items-center justify-center gap-4">
           <a
@@ -366,13 +421,24 @@ export default function Page() {
         <div className="grid md:grid-cols-[1fr,360px] items-center gap-12">
           <div>
             <p className="opacity-90">
-              I’m a Data Science M.Sc. student (AI & ML) at Friedrich-Alexander-Universität Erlangen-Nürnberg, with
-              hands-on experience building ML/AI applications and agents. I enjoy turning messy data into useful products
-              and crafting reproducible pipelines—from modeling and evaluation to deployment.
+              I’m a Data Science M.Sc. student (AI & ML) at Friedrich-Alexander-Universität
+              Erlangen-Nürnberg, with hands-on experience building ML/AI applications and agents.
+              I enjoy turning messy data into useful products and crafting reproducible pipelines—from
+              modeling and evaluation to deployment.
             </p>
             <ul className="list-disc pl-6 opacity-90 mt-5">
-              <li>Currently exploring Vision-Language Models for structured text extraction (Master’s thesis).</li>
-              <li>Building multi AI agents for question-answering directly over multiple data sources (Working Student @ Siemens AG).</li>
+              <li>
+                Currently exploring Vision-Language Models for structured text extraction (Master’s thesis).
+              </li>
+              <li>
+                Building multi AI agents for question-answering directly over multiple data sources
+                (Working Student @ Siemens AG).
+              </li>
+              <li>
+                Team member @ Munich Music Labs — building a deep-learning system that extracts rich
+                features from raw audio for content-based recommendation (embeddings for similarity,
+                emotion cues, and NL playlisting).
+              </li>
             </ul>
           </div>
           <div className="flex justify-center md:justify-end">
@@ -398,10 +464,17 @@ export default function Page() {
       <Section id="certificates" title="Certificates & Credentials">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {CERTS.map((c) => (
-            <div key={c.title} className="rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5">
-              {/* Optional top preview image */}
+            <div
+              key={c.title}
+              className="rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5"
+            >
               {c.image && (
-                <a href={`${BASE}${c.image}`} target="_blank" rel="noopener noreferrer" className="block mb-4">
+                <a
+                  href={`${BASE}${c.image}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block mb-4"
+                >
                   <Image
                     src={`${BASE}${c.image}`}
                     alt={c.title}
@@ -416,7 +489,9 @@ export default function Page() {
               <h3 className="text-lg md:text-xl font-semibold">{c.title}</h3>
               {(c.issuer || c.year) && (
                 <p className="opacity-80 text-sm mt-1">
-                  {c.issuer ?? ""}{c.issuer && c.year ? " • " : ""}{c.year ?? ""}
+                  {c.issuer ?? ""}
+                  {c.issuer && c.year ? " • " : ""}
+                  {c.year ?? ""}
                 </p>
               )}
 
@@ -463,7 +538,16 @@ export default function Page() {
           <div>
             <h4 className="font-medium mb-3 text-lg md:text-xl">Programming & Data</h4>
             <div className="flex flex-wrap gap-2">
-              {["Python", "SQL", "PySpark", "Airflow", "TypeScript", "Unix Shell Scripting", "Pydantic", "ONNX"].map((s) => (
+              {[
+                "Python",
+                "SQL",
+                "PySpark",
+                "Airflow",
+                "TypeScript",
+                "Unix Shell Scripting",
+                "Pydantic",
+                "ONNX",
+              ].map((s) => (
                 <Chip key={s}>{s}</Chip>
               ))}
             </div>
@@ -491,11 +575,20 @@ export default function Page() {
           <div>
             <h4 className="font-medium mb-3 text-lg md:text-xl">MLOps & Experimentation</h4>
             <div className="flex flex-wrap gap-2">
-              {["MLflow", "Weights & Biases", "TensorBoard", "Optuna", "ZenML", "Docker", "GitHub Actions"].map(
-                (s) => (
-                  <Chip key={s}>{s}</Chip>
-                )
-              )}
+              {[
+                "MLflow",
+                "Weights & Biases",
+                "TensorBoard",
+                "Optuna",
+                "ZenML",
+                "Docker",
+                "GitHub Actions",
+                "LangFlow",
+                "n8n",
+                "Comet (Opik)",
+              ].map((s) => (
+                <Chip key={s}>{s}</Chip>
+              ))}
             </div>
           </div>
           <div>
@@ -506,6 +599,7 @@ export default function Page() {
                 "Azure AI Foundry",
                 "Azure OpenAI",
                 "Azure Blob Storage",
+                "AWS SageMaker",
                 "HPC",
                 "Power BI",
                 "Power Automate",
@@ -529,6 +623,15 @@ export default function Page() {
               bullets: [
                 "Developing AI agents for question-answering over multiple data sources and integrate in MS Teams.",
                 "Azure ML, Azure OpenAI, LangChain, PyTorch, Azure AI Search, Postman Collection.",
+              ],
+            },
+            // 🔹 New card directly under Siemens
+            {
+              role: "Member — Munich Music Labs",
+              org: "Munich Music Labs, Munich, Germany",
+              time: "Nov 2025 — Present",
+              bullets: [
+                "Deep-learning system to extract rich features directly from raw audio for content-based music recommendation (embeddings for similarity, emotion cues, NL playlisting).",
               ],
             },
             {
@@ -570,13 +673,21 @@ export default function Page() {
       <Section id="education" title="Education">
         <div className="space-y-8">
           <div className="rounded-2xl border p-7 md:p-8">
-            <h3 className="text-xl md:text-2xl font-semibold">M.Sc. in Data Science (AI & ML)</h3>
-            <p className="opacity-90">Friedrich-Alexander-Universität Erlangen-Nürnberg — Erlangen, Germany</p>
+            <h3 className="text-xl md:text-2xl font-semibold">
+              M.Sc. in Data Science (AI & ML)
+            </h3>
+            <p className="opacity-90">
+              Friedrich-Alexander-Universität Erlangen-Nürnberg — Erlangen, Germany
+            </p>
             <p className="opacity-75">2022 — Present</p>
           </div>
           <div className="rounded-2xl border p-7 md:p-8">
-            <h3 className="text-xl md:text-2xl font-semibold">B.Tech. in Computer Science & Engineering</h3>
-            <p className="opacity-90">Maulana Abul Kalam Azad University of Technology — Kolkata, India</p>
+            <h3 className="text-xl md:text-2xl font-semibold">
+              B.Tech. in Computer Science & Engineering
+            </h3>
+            <p className="opacity-90">
+              Maulana Abul Kalam Azad University of Technology — Kolkata, India
+            </p>
             <p className="opacity-75">2014 — 2018</p>
           </div>
         </div>
@@ -626,8 +737,8 @@ export default function Page() {
         </form>
 
         <p className="opacity-70 text-sm mt-8">
-          © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and hosted on GitHub
-          Pages.
+          © {new Date().getFullYear()} Uddipan. Built with Next.js, Tailwind CSS, Framer Motion, and
+          hosted on GitHub Pages.
         </p>
       </Section>
 
