@@ -125,6 +125,13 @@ const PROJECTS = {
         "Real-time pipelines for polymer extrusion (Hopper/Extruder/Heating Zone 1): anomaly detection, forecasting, and process optimization.",
       link: "https://github.com/uddipan77/REHAU-Digital-Twin",
     },
+    // ✅ Added project (Applied & Industry Projects)
+    {
+      name: "Anomaly Detection Chatbot",
+      desc:
+        "A full-stack GenAI application that lets users ask natural language questions about network traffic anomalies.",
+      link: "https://github.com/uddipan77/anomaly_detection_chatbot",
+    },
   ],
 } as const;
 /* --------------------------------------------- */
