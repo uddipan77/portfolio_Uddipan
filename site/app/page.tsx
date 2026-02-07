@@ -438,7 +438,7 @@ export default function Page() {
                 Currently exploring Vision-Language Models for structured text extraction (Master’s thesis).
               </li>
               <li>
-                Building multi AI agents for question-answering directly over multiple data sources
+                As a part of SI EA PLM Digital Data & AI Workstream, driving end-to-end digitalization initiatives that integrate data engineering, AI technologies, and business process automation
                 (Working Student @ Siemens AG).
               </li>
               <li>
@@ -628,8 +628,9 @@ export default function Page() {
               org: "Siemens AG, Germany",
               time: "May 2025 — Present",
               bullets: [
-                "Developing AI agents for question-answering over multiple data sources and integrate in MS Teams.",
-                "Azure ML, Azure OpenAI, LangChain, PyTorch, Azure AI Search, Postman Collection.",
+                "Building AI chatbot solutions (Azure OpenAI, Helix AI) and developing LLM-based agent simulations (AgentTorch) to model complex, multi-factor PLM ecosystems.",
+                "Developing ML models to challenge and validate Market Intelligence (MI) growth/price forecasts by learning the underlying drivers and producing factor-backed demand forecasts for switchgear cells across markets.",
+                "Migrating legacy Excel-based systems to a scalable Graph Database + Snowflake stack to improve data integrity, scalability, and advanced analytics readiness."
               ],
             },
             // 🔹 New card directly under Siemens
@@ -638,7 +639,7 @@ export default function Page() {
               org: "Munich Music Labs, Munich, Germany",
               time: "Nov 2025 — Present",
               bullets: [
-                "Deep-learning system to extract rich features directly from raw audio for content-based music recommendation (embeddings for similarity, emotion cues, NL playlisting).",
+                "Evaluating whether ASR-style seq2seq and audio-language foundation models can be fine-tuned to perform Automatic Music Transcription, converting raw audio into MT3-style MIDI token sequences for multitask multitrack transcription (including low-resource setups) and benchmarking against the MT3 (T5-based) baseline.",
               ],
             },
             {
@@ -646,8 +647,8 @@ export default function Page() {
               org: "Schaeffler, Germany",
               time: "Sep 2021 — Jun 2022",
               bullets: [
-                "Built interactive Power BI dashboards; data wrangling & modeling.",
-                "Automations with Microsoft 365 & Power Platform.",
+                "Automated R&D budgeting/forecast analysis by integrating SAP data into Power BI and orchestrating refresh/workflows with Power Automate.",
+                "Implemented Power Query transformations and a flexible data model to handle inconsistent/changing SAP source structures.",
               ],
             },
             {
