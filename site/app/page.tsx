@@ -584,6 +584,8 @@ export default function Page() {
             <div className="flex flex-wrap gap-2">
               {[
                 "MLflow",
+                "Grafana",
+                "Prometheus",
                 "Weights & Biases",
                 "TensorBoard",
                 "Optuna",
@@ -593,6 +595,8 @@ export default function Page() {
                 "LangFlow",
                 "n8n",
                 "Comet (Opik)",
+                "MiniKube",
+                "Kubernetes",
               ].map((s) => (
                 <Chip key={s}>{s}</Chip>
               ))}
