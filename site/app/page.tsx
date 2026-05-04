@@ -100,9 +100,21 @@ const PROJECTS = {
     {
       name: "Local LLM-based RAG System for Your Personal Documents",
       desc:
-        "Private, fully local RAG: convert docs to PDF, OCR text, store embeddings in OpenSearch, query with Ollama—secure & offline.",
+        "Built a privacy-friendly local RAG chatbot for personal document search without cloud upload, using OpenSearch hybrid retrieval (BM25 + KNN semantic search) and a local Ollama LLM for offline Q&A. Added optional Redis caching for faster repeat queries, password-protected access, Prometheus/Grafana monitoring for latency, retrieval, token, and trust metrics, OCR-enabled PDF processing with Tesseract fallback, and real-time streaming responses in the chat UI.",
       link:
         "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
+    },
+    {
+      name: "Multi-Agent LLMOps Chat Application",
+      desc:
+        "Built a multi-agent AI chat application using FastAPI, Streamlit, LangGraph, and Groq LLMs, with optional Tavily web search, configurable model selection, and a concurrent frontend/backend architecture. Added production-oriented components including request validation, centralized logging, Docker containerization, and a Jenkins-to-AWS ECS deployment pipeline.",
+      link: "https://github.com/uddipan77/multi-agent-llmops",
+    },
+    {
+      name: "Agentic arXiv RAG",
+      desc:
+        "Built a production-grade Agentic RAG system for arXiv research papers using FastAPI, LangGraph, OpenSearch, PostgreSQL, Ollama, Redis, and Airflow. Used Airflow to orchestrate automated ingestion pipelines for paper fetching, PDF parsing, chunking, embedding generation, and hybrid retrieval, enabling citation-grounded question answering through a dashboard and API.",
+      link: "https://github.com/uddipan77/agentic-arxiv-rag",
     },
     {
       name: "Fullstack Customer Churn Prediction App",
@@ -111,14 +123,6 @@ const PROJECTS = {
       link: "https://github.com/uddipan77/fullstack_customer_churn",
     },
     // 🔹 New applied projects
-    {
-      name:
-        "Multi-Agent Customer Support — LangFlow, Groq, Astra DB, Streamlit",
-      desc:
-        "Manager agent routes to FAQ and Order agents. PDF/CSV knowledge via Astra DB vectors; Groq LLM for fast inference.",
-      link:
-        "https://github.com/uddipan77/Customer-Support-Multi-Agent-System-with-Langflow-and-Streamlit",
-    },
     {
       name: "REHAU Digital Twin — Time-Series Anomaly & Forecasting",
       desc:
@@ -387,14 +391,32 @@ export default function Page() {
           Data Scientist · Applied AI Engineer
         </p>
 
-        <div className="mt-6 flex items-center justify-center gap-4">
+        <div className="mt-8 grid w-full max-w-3xl justify-items-center gap-4 md:grid-cols-[auto,360px] md:items-center md:justify-center">
           <a
-            className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-base md:text-lg font-medium hover:bg-black/5 dark:hover:bg-white/10"
+            className="inline-flex w-fit items-center justify-center rounded-full border px-6 py-3 text-center text-base leading-none md:text-lg font-medium hover:bg-black/5 dark:hover:bg-white/10"
             href={`${BASE}/assets/files/ResumeUddipan.pdf`}
             target="_blank"
             rel="noopener noreferrer"
           >
             Download Resume
+          </a>
+
+          <a
+            href={`${BASE}/images/demo.gif`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group mx-auto block overflow-hidden rounded-3xl border p-2 hover:bg-black/5 dark:hover:bg-white/10 md:mx-0"
+            aria-label="Open application demo"
+          >
+            <Image
+              src={`${BASE}/images/demo.gif`}
+              alt="Application demo"
+              width={720}
+              height={405}
+              priority
+              className="h-44 w-full rounded-2xl object-cover ring-1 ring-black/10 transition-transform duration-300 group-hover:scale-[1.02] dark:ring-white/10 md:h-52"
+              unoptimized
+            />
           </a>
         </div>
 
@@ -435,7 +457,18 @@ export default function Page() {
             </p>
             <ul className="list-disc pl-6 opacity-90 mt-5">
               <li>
-                Currently exploring Vision-Language Models for structured text extraction (Master’s thesis).
+                Master&apos;s thesis: comparative analysis of vision-language models for OCR-based
+                structured JSON extraction from document images.
+                {" "}
+                <a
+                  href="https://github.com/uddipan77/Analysis-of-Lightweight-Vision-Language-Models-for-Document-OCR-and-Structured-Output-Generation"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-4"
+                >
+                  Repository
+                </a>
+                .
               </li>
               <li>
                 As a part of SI EA PLM Digital Data & AI Workstream, driving end-to-end digitalization initiatives that integrate data engineering, AI technologies, and business process automation
@@ -543,36 +576,32 @@ export default function Page() {
       <Section id="skills" title="Skills">
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <h4 className="font-medium mb-3 text-lg md:text-xl">Programming & Data</h4>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">Programming Languages</h4>
             <div className="flex flex-wrap gap-2">
-              {[
-                "Python",
-                "SQL",
-                "PySpark",
-                "Airflow",
-                "TypeScript",
-                "Unix Shell Scripting",
-                "Pydantic",
-                "ONNX",
-              ].map((s) => (
+              {["Python", "SQL", "Unix Shell Scripting", "TypeScript"].map((s) => (
                 <Chip key={s}>{s}</Chip>
               ))}
             </div>
           </div>
           <div>
-            <h4 className="font-medium mb-3 text-lg md:text-xl">ML/DL & NLP</h4>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">
+              Machine Learning &amp; Deep Learning
+            </h4>
             <div className="flex flex-wrap gap-2">
               {[
                 "PyTorch",
                 "PyTorch Lightning",
-                "scikit-learn",
+                "Scikit-learn",
                 "XGBoost",
                 "statsmodels",
+                "HF Transformers",
                 "spaCy",
                 "NLTK",
-                "HF Transformers",
+                "SWIFT",
+                "LLaMA-Factory",
                 "LangChain",
                 "LangGraph",
+                "Groq Cloud",
                 "vLLM",
               ].map((s) => (
                 <Chip key={s}>{s}</Chip>
@@ -580,22 +609,17 @@ export default function Page() {
             </div>
           </div>
           <div>
-            <h4 className="font-medium mb-3 text-lg md:text-xl">MLOps & Experimentation</h4>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">Vector, Validation &amp; CI/CD</h4>
             <div className="flex flex-wrap gap-2">
               {[
-                "MLflow",
-                "Grafana",
-                "Prometheus",
-                "Weights & Biases",
-                "TensorBoard",
-                "Optuna",
-                "ZenML",
+                "OpenSearch",
+                "Qdrant",
+                "FAISS",
+                "Chroma",
+                "Pydantic",
+                "ONNX",
                 "Docker",
                 "GitHub Actions",
-                "LangFlow",
-                "n8n",
-                "Comet (Opik)",
-                "MiniKube",
                 "Kubernetes",
               ].map((s) => (
                 <Chip key={s}>{s}</Chip>
@@ -603,18 +627,50 @@ export default function Page() {
             </div>
           </div>
           <div>
-            <h4 className="font-medium mb-3 text-lg md:text-xl">Cloud & BI</h4>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">
+              Data Engineering &amp; Orchestration
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {["PySpark", "Airflow", "Autosys", "Ab-Initio"].map((s) => (
+                <Chip key={s}>{s}</Chip>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">
+              Cloud, BI &amp; High Performance Computing
+            </h4>
             <div className="flex flex-wrap gap-2">
               {[
-                "Azure ML",
-                "Azure AI Foundry",
-                "Azure OpenAI",
-                "Azure Blob Storage",
-                "AWS SageMaker",
+                "Azure",
+                "AWS",
                 "HPC",
-                "Power BI",
+                "SLURM",
+                "PowerBI",
                 "Power Automate",
                 "Power Apps",
+              ].map((s) => (
+                <Chip key={s}>{s}</Chip>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium mb-3 text-lg md:text-xl">
+              Experimentation, APIs &amp; Monitoring
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {[
+                "Opik",
+                "MLflow",
+                "Weights & Biases",
+                "TensorBoard",
+                "Optuna",
+                "FastAPI",
+                "Flask",
+                "Node.js",
+                "Streamlit",
+                "Prometheus",
+                "Grafana",
               ].map((s) => (
                 <Chip key={s}>{s}</Chip>
               ))}
@@ -626,58 +682,126 @@ export default function Page() {
       {/* EXPERIENCE */}
       <Section id="experience" title="Experience">
         <div className="space-y-8">
-          {[
-            {
-              role: "Working Student — Applied AI Engineer",
-              org: "Siemens AG, Germany",
-              time: "May 2025 — Present",
-              bullets: [
-                "Building AI chatbot solutions (Azure OpenAI, Helix AI) and developing LLM-based agent simulations (AgentTorch) to model complex, multi-factor PLM ecosystems.",
-                "Developing ML models to challenge and validate Market Intelligence (MI) growth/price forecasts by learning the underlying drivers and producing factor-backed demand forecasts for switchgear cells across markets.",
-                "Migrating legacy Excel-based systems to a scalable Graph Database + Snowflake stack to improve data integrity, scalability, and advanced analytics readiness."
-              ],
-            },
-            // 🔹 New card directly under Siemens
-            {
-              role: "Member — Munich Music Labs",
-              org: "Munich Music Labs, Munich, Germany",
-              time: "Nov 2025 — Present",
-              bullets: [
-                "Evaluating whether ASR-style seq2seq and audio-language foundation models can be fine-tuned to perform Automatic Music Transcription, converting raw audio into MT3-style MIDI token sequences for multitask multitrack transcription (including low-resource setups) and benchmarking against the MT3 (T5-based) baseline.",
-              ],
-            },
-            {
-              role: "Working Student — Data Analyst",
-              org: "Schaeffler, Germany",
-              time: "Sep 2021 — Jun 2022",
-              bullets: [
-                "Automated R&D budgeting/forecast analysis by integrating SAP data into Power BI and orchestrating refresh/workflows with Power Automate.",
-                "Implemented Power Query transformations and a flexible data model to handle inconsistent/changing SAP source structures.",
-              ],
-            },
-            {
-              role: "Data Engineer / Data Analyst",
-              org: "Tata Consultancy Services, Kolkata, India",
-              time: "Sep 2018 — Aug 2021",
-              bullets: [
-                "ETL pipelines in Ab-initio, Autosys job orchestration.",
-                "Migration to PySpark and Airflow.",
-                "Optimized SQL for data integration, financial analytics (MRR/ARR/P&L).",
-              ],
-            },
-          ].map((x) => (
-            <div key={x.role} className="rounded-2xl border p-7 md:p-8">
-              <h3 className="text-xl md:text-2xl font-semibold">{x.role}</h3>
-              <p className="opacity-90">
-                {x.org} • {x.time}
-              </p>
+          <div className="rounded-2xl border p-7 md:p-8">
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 className="text-xl md:text-2xl font-semibold">
+                  Research Team Member, Munich Music Labs, TUM Germany
+                </h3>
+                <p className="mt-3 font-medium">Responsibilities:</p>
+              </div>
+              <p className="opacity-90 shrink-0">Nov 2025 — Present</p>
+            </div>
+            <ul className="list-disc pl-6 mt-2 opacity-90">
+              <li>
+                Developing an LLM/foundation-model-driven pipeline to transcribe audio into
+                symbolic music.
+              </li>
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border p-7 md:p-8">
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 className="text-xl md:text-2xl font-semibold">
+                  Working Student - Applied AI Engineer, Siemens AG Germany
+                </h3>
+                <p className="mt-3 font-medium">Responsibilities:</p>
+              </div>
+              <p className="opacity-90 shrink-0">May 2025 — Present</p>
+            </div>
+            <ul className="list-disc pl-6 mt-2 opacity-90">
+              <li>
+                Built an AI reporting pipeline that unified departmental data into a single
+                reporting layer and generated automated executive PDF/PPT summaries.
+              </li>
+              <li>
+                Built an NLP-to-SPARQL interface for natural-language querying of GraphDB.
+              </li>
+            </ul>
+            <p className="mt-4 opacity-90">
+              <span className="font-medium">Tools &amp; Technologies:</span> Snowflake, dbt,
+              Microsoft Co-pilot Studio, Azure Machine Learning, Azure Open AI, LangChain,
+              PyTorch, Azure AI Search, Helix AI, Postman Collection
+            </p>
+          </div>
+
+          <div className="rounded-2xl border p-7 md:p-8">
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 className="text-xl md:text-2xl font-semibold">
+                  Working Student - Data Analyst, Schaeffler Germany
+                </h3>
+                <p className="mt-3 font-medium">Responsibilities:</p>
+              </div>
+              <p className="opacity-90 shrink-0">June 2024 — April 2025</p>
+            </div>
+            <ul className="list-disc pl-6 mt-2 opacity-90">
+              <li>
+                Built interactive Power BI dashboards for BOM and financial reporting, including
+                data cleaning, transformation, and data model design to support accurate visual
+                analysis.
+              </li>
+              <li>
+                Automated SAP report extraction and SharePoint-based reporting workflows using
+                Power Automate to support downstream Power BI refresh.
+              </li>
+            </ul>
+            <p className="mt-4 opacity-90">
+              <span className="font-medium">Tools &amp; Technologies:</span> PowerBI, Power Apps,
+              Power Automate, SAP, Dataverse, Microsoft Power Platform
+            </p>
+          </div>
+
+          <div className="rounded-2xl border p-7 md:p-8 space-y-6">
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <h3 className="text-xl md:text-2xl font-semibold">
+                Tata Consultancy Services, Kolkata, India
+              </h3>
+              <p className="opacity-90 shrink-0">Sep 2018 — June 2022</p>
+            </div>
+
+            <div>
+              <div className="flex flex-col gap-1 md:flex-row md:items-start md:justify-between">
+                <h4 className="text-lg md:text-xl font-semibold">Data Engineer</h4>
+                <p className="opacity-90 shrink-0">Sep 2021 — June 2022</p>
+              </div>
+              <p className="mt-3 font-medium">Responsibilities:</p>
               <ul className="list-disc pl-6 mt-2 opacity-90">
-                {x.bullets.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
+                <li>
+                  Built and maintained 10+ ETL workflows in Ab-initio using Autosys scheduling,
+                  improving data delivery SLA by 30%.
+                </li>
+                <li>
+                  Optimized ETL processes by migrating logic from Ab-initio to PySpark, reducing
+                  runtime by 20%.
+                </li>
               </ul>
             </div>
-          ))}
+
+            <div>
+              <div className="flex flex-col gap-1 md:flex-row md:items-start md:justify-between">
+                <h4 className="text-lg md:text-xl font-semibold">Data Analyst</h4>
+                <p className="opacity-90 shrink-0">Sep 2018 — Aug 2021</p>
+              </div>
+              <p className="mt-3 font-medium">Responsibilities:</p>
+              <ul className="list-disc pl-6 mt-2 opacity-90">
+                <li>
+                  Developed PowerBI dashboards and reports (MRR, ARR, and P&amp;L), enabling faster
+                  data-driven decisions.
+                </li>
+                <li>
+                  Automated data quality checks and implemented cleaning scripts, reducing manual
+                  effort by 20%.
+                </li>
+              </ul>
+              <p className="mt-4 opacity-90">
+                <span className="font-medium">Tools &amp; Technologies:</span> Kafka, Airflow,
+                GitHub Enterprise, Python, Unix, Autosys, Abinitio, SQL Indexing, Window
+                Functions, CTEs, SQL Procedures, ServiceNow, PowerBI, PowerApps, SQL, Python
+              </p>
+            </div>
+          </div>
         </div>
       </Section>
 
@@ -691,7 +815,19 @@ export default function Page() {
             <p className="opacity-90">
               Friedrich-Alexander-Universität Erlangen-Nürnberg — Erlangen, Germany
             </p>
-            <p className="opacity-75">2022 — Present</p>
+            <p className="opacity-75">Oct 2022 — Present</p>
+            <p className="mt-4 opacity-90">
+              Master&apos;s thesis: comparative analysis of vision-language models for OCR-based
+              structured JSON extraction from document images.
+            </p>
+            <a
+              href="https://github.com/uddipan77/Analysis-of-Lightweight-Vision-Language-Models-for-Document-OCR-and-Structured-Output-Generation"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex rounded-full border px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              View Thesis Repository
+            </a>
           </div>
           <div className="rounded-2xl border p-7 md:p-8">
             <h3 className="text-xl md:text-2xl font-semibold">
@@ -700,7 +836,7 @@ export default function Page() {
             <p className="opacity-90">
               Maulana Abul Kalam Azad University of Technology — Kolkata, India
             </p>
-            <p className="opacity-75">2014 — 2018</p>
+            <p className="opacity-75">June 2014 — July 2018</p>
           </div>
         </div>
       </Section>
