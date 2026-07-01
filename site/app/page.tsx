@@ -475,9 +475,8 @@ export default function Page() {
                 (Working Student @ Siemens AG).
               </li>
               <li>
-                Team member @ Munich Music Labs — building a deep-learning system that extracts rich
-                features from raw audio for content-based recommendation (embeddings for similarity,
-                emotion cues, and NL playlisting).
+                Research Team Member @ Munich Music Labs - exploring the intersection of AI,
+                music, and multimodal learning.
               </li>
             </ul>
           </div>
@@ -694,8 +693,7 @@ export default function Page() {
             </div>
             <ul className="list-disc pl-6 mt-2 opacity-90">
               <li>
-                Developing an LLM/foundation-model-driven pipeline to transcribe audio into
-                symbolic music.
+                Developing a multimodal audio-MIDI model for instrument assignment.
               </li>
             </ul>
           </div>
@@ -730,7 +728,7 @@ export default function Page() {
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
               <div>
                 <h3 className="text-xl md:text-2xl font-semibold">
-                  Working Student - Data Analyst, Schaeffler Germany
+                  Working Student - Data Analysis and Machine Learning, Schaeffler Germany
                 </h3>
                 <p className="mt-3 font-medium">Responsibilities:</p>
               </div>
@@ -738,13 +736,12 @@ export default function Page() {
             </div>
             <ul className="list-disc pl-6 mt-2 opacity-90">
               <li>
-                Built interactive Power BI dashboards for BOM and financial reporting, including
-                data cleaning, transformation, and data model design to support accurate visual
-                analysis.
+                Built an anomaly detection pipeline to identify unusual BOM component prices and
+                surface flagged cases in Power BI for analysis.
               </li>
               <li>
-                Automated SAP report extraction and SharePoint-based reporting workflows using
-                Power Automate to support downstream Power BI refresh.
+                Developed a quantity forecasting solution using regional market data, growth
+                factors, and historical planning inputs to generate country-level demand scenarios.
               </li>
             </ul>
             <p className="mt-4 opacity-90">
