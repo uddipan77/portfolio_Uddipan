@@ -5,12 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
+import { BookOpen, ExternalLink, Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
 
-// 🔹 Include "certificates" in the nav order so scroll-spy highlights it
+// Nav order for scroll-spy highlights
 const SECTION_IDS = [
   "about",
   "projects",
+  "blog",
   "certificates",
   "skills",
   "experience",
@@ -63,12 +64,48 @@ const CERTS: Cert[] = [
   },
 ];
 
-const PROJECTS = {
+type ProjectGroup = "research" | "applied";
+type ProjectTopic =
+  | "rag-agents"
+  | "llmops"
+  | "genai-apps"
+  | "vision-ocr"
+  | "industry-ml"
+  | "nlp";
+type ProjectFilter = ProjectTopic | "all";
+type Project = {
+  name: string;
+  desc: string;
+  link: string;
+  topics: ProjectTopic[];
+};
+
+const PROJECT_TOPIC_LABELS: Record<ProjectTopic, string> = {
+  "rag-agents": "RAG & Agents",
+  llmops: "LLMOps",
+  "genai-apps": "GenAI Apps",
+  "vision-ocr": "Vision/OCR",
+  "industry-ml": "Industry ML",
+  nlp: "NLP",
+};
+
+const PROJECT_TOPIC_FILTERS: { key: ProjectFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "rag-agents", label: "RAG & Agents" },
+  { key: "llmops", label: "LLMOps" },
+  { key: "genai-apps", label: "GenAI Apps" },
+  { key: "vision-ocr", label: "Vision/OCR" },
+  { key: "industry-ml", label: "Industry ML" },
+  { key: "nlp", label: "NLP" },
+];
+
+const PROJECTS: Record<ProjectGroup, Project[]> = {
   research: [
     {
       name: "AI-FAPS: Multi-Modal · Multi-View · Multi-Task Pipeline",
       desc: "Deep learning pipeline for quality monitoring in industrial manufacturing.",
       link: "https://github.com/uddipan77/AI-FAPS-Multi-Modal-View-Task-Pipeline",
+      topics: ["vision-ocr", "industry-ml"],
     },
     {
       name:
@@ -76,6 +113,7 @@ const PROJECTS = {
       desc: "Comparative assessment of self-, semi-, and combined learning approaches.",
       link:
         "https://github.com/uddipan77/ai-faps-self-semi-combined-dl-pipeline-industrial-inspection",
+      topics: ["vision-ocr", "industry-ml"],
     },
     // 🔹 New research project
     {
@@ -84,6 +122,7 @@ const PROJECTS = {
         "Word2Vec, GloVe, FastText, and Sentence Transformers compared for stock-news sentiment using tuned Random Forest classifiers.",
       link:
         "https://github.com/uddipan77/stock-sentiment-embeddings-comparison",
+      topics: ["nlp", "industry-ml"],
     },
   ],
   applied: [
@@ -91,11 +130,13 @@ const PROJECTS = {
       name: "OCR → Machine Translation for Inventory Documents",
       desc: "Reorders OCR text and translates to Chinese; evaluates with BLEU.",
       link: "https://github.com/uddipan77/OCR-to-Machine-Translation",
+      topics: ["vision-ocr", "nlp"],
     },
     {
       name: "Generative AI Cold-Email Generator",
       desc: "Llama 3.1, LangChain, ChromaDB, Streamlit, Groq Cloud.",
       link: "https://github.com/uddipan77/generate_email_with_llm",
+      topics: ["genai-apps"],
     },
     {
       name: "Local LLM-based RAG System for Your Personal Documents",
@@ -103,24 +144,28 @@ const PROJECTS = {
         "Built a privacy-friendly local RAG chatbot for personal document search without cloud upload, using OpenSearch hybrid retrieval (BM25 + KNN semantic search) and a local Ollama LLM for offline Q&A. Added optional Redis caching for faster repeat queries, password-protected access, Prometheus/Grafana monitoring for latency, retrieval, token, and trust metrics, OCR-enabled PDF processing with Tesseract fallback, and real-time streaming responses in the chat UI.",
       link:
         "https://github.com/uddipan77/local_rag_talk_with_your_docs/tree/main",
+      topics: ["rag-agents", "genai-apps", "llmops"],
     },
     {
       name: "Multi-Agent LLMOps Chat Application",
       desc:
         "Built a multi-agent AI chat application using FastAPI, Streamlit, LangGraph, and Groq LLMs, with optional Tavily web search, configurable model selection, and a concurrent frontend/backend architecture. Added production-oriented components including request validation, centralized logging, Docker containerization, and a Jenkins-to-AWS ECS deployment pipeline.",
       link: "https://github.com/uddipan77/multi-agent-llmops",
+      topics: ["rag-agents", "llmops", "genai-apps"],
     },
     {
       name: "Agentic arXiv RAG",
       desc:
         "Built a production-grade Agentic RAG system for arXiv research papers using FastAPI, LangGraph, OpenSearch, PostgreSQL, Ollama, Redis, and Airflow. Used Airflow to orchestrate automated ingestion pipelines for paper fetching, PDF parsing, chunking, embedding generation, and hybrid retrieval, enabling citation-grounded question answering through a dashboard and API.",
       link: "https://github.com/uddipan77/agentic-arxiv-rag",
+      topics: ["rag-agents", "llmops"],
     },
     {
       name: "Fullstack Customer Churn Prediction App",
       desc:
         "FastAPI + React; batch & single predictions; choose KNN, SVM, RF, LR, DT, AdaBoost.",
       link: "https://github.com/uddipan77/fullstack_customer_churn",
+      topics: ["industry-ml"],
     },
     // 🔹 New applied projects
     {
@@ -128,6 +173,7 @@ const PROJECTS = {
       desc:
         "Real-time pipelines for polymer extrusion (Hopper/Extruder/Heating Zone 1): anomaly detection, forecasting, and process optimization.",
       link: "https://github.com/uddipan77/REHAU-Digital-Twin",
+      topics: ["industry-ml"],
     },
     // ✅ Added project (Applied & Industry Projects)
     {
@@ -135,9 +181,10 @@ const PROJECTS = {
       desc:
         "A full-stack GenAI application that lets users ask natural language questions about network traffic anomalies.",
       link: "https://github.com/uddipan77/anomaly_detection_chatbot",
+      topics: ["genai-apps", "industry-ml"],
     },
   ],
-} as const;
+};
 /* --------------------------------------------- */
 
 const Section = ({
@@ -212,19 +259,26 @@ function ThemeToggle() {
 
 /* ---------- Projects tab UI ---------- */
 function ProjectsTabbed() {
-  const [tab, setTab] = useState<"research" | "applied">("research");
-  const tabs = [
+  const [tab, setTab] = useState<ProjectGroup>("research");
+  const [topic, setTopic] = useState<ProjectFilter>("all");
+  const tabs: { key: ProjectGroup; label: string }[] = [
     { key: "research", label: "Research Projects" },
     { key: "applied", label: "Applied & Industry Projects" },
-  ] as const;
+  ];
+  const visibleProjects = PROJECTS[tab].filter(
+    (p) => topic === "all" || p.topics.includes(topic)
+  );
 
   return (
     <div>
-      <div className="inline-flex rounded-full border p-1 mb-6">
+      <div className="inline-flex rounded-full border p-1 mb-4">
         {tabs.map((t) => (
           <button
             key={t.key}
-            onClick={() => setTab(t.key)}
+            onClick={() => {
+              setTab(t.key);
+              setTopic("all");
+            }}
             className={`px-4 py-1.5 rounded-full text-sm md:text-base transition ${
               tab === t.key
                 ? "bg-black/5 dark:bg-white/10 font-medium"
@@ -236,19 +290,93 @@ function ProjectsTabbed() {
         ))}
       </div>
 
+      <div className="mb-8 flex flex-wrap gap-2">
+        {PROJECT_TOPIC_FILTERS.map((filter) => (
+          <button
+            key={filter.key}
+            onClick={() => setTopic(filter.key)}
+            className={`rounded-full border px-3 py-1.5 text-sm transition ${
+              topic === filter.key
+                ? "bg-black/5 font-medium dark:bg-white/10"
+                : "opacity-75 hover:opacity-100"
+            }`}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {PROJECTS[tab].map((p) => (
+        {visibleProjects.map((p) => (
           <a
             key={p.name}
             href={p.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="block rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5"
+            className="flex h-full flex-col rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5"
           >
             <h3 className="text-xl md:text-2xl font-semibold">{p.name}</h3>
             <p className="mt-3 opacity-90">{p.desc}</p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {p.topics.map((projectTopic) => (
+                <span
+                  key={projectTopic}
+                  className="rounded-full border px-2.5 py-1 text-xs opacity-80"
+                >
+                  {PROJECT_TOPIC_LABELS[projectTopic]}
+                </span>
+              ))}
+            </div>
           </a>
         ))}
+      </div>
+    </div>
+  );
+}
+
+const BLOG_URL = "https://buildwithuddipan.hashnode.dev/";
+
+function BlogSection() {
+  return (
+    <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
+      <a
+        href={BLOG_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group block rounded-2xl border p-7 md:p-8 hover:bg-black/5 dark:hover:bg-white/5"
+      >
+        <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full border">
+          <BookOpen className="h-5 w-5" />
+        </div>
+        <h3 className="text-2xl md:text-3xl font-semibold">Build with Uddipan</h3>
+        <p className="mt-4 opacity-90">
+          Technical notes on applied AI systems, RAG, agents, LLMOps, and lessons from
+          building production-minded ML projects.
+        </p>
+        <span className="mt-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-base font-medium group-hover:bg-black/5 dark:group-hover:bg-white/10">
+          Open Blog
+          <ExternalLink className="h-4 w-4" />
+        </span>
+      </a>
+
+      <div className="rounded-2xl border p-7 md:p-8">
+        <h3 className="text-2xl md:text-3xl font-semibold">Writing Themes</h3>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {[
+            "RAG Systems",
+            "Multi-Agent Workflows",
+            "LLMOps",
+            "Applied AI",
+            "Evaluation",
+            "Deployment",
+          ].map((topicLabel) => (
+            <Chip key={topicLabel}>{topicLabel}</Chip>
+          ))}
+        </div>
+        <p className="mt-6 opacity-90">
+          I use the blog to expand on implementation choices behind my portfolio projects and
+          document practical patterns from experiments, pipelines, and deployed AI tools.
+        </p>
       </div>
     </div>
   );
@@ -355,7 +483,7 @@ export default function Page() {
   return (
     <main className="min-h-screen">
       <header className="sticky top-0 z-50 backdrop-blur bg-white/75 dark:bg-black/50 border-b border-black/10 dark:border-white/10">
-        <nav className="max-w-[1600px] mx-auto px-5 md:px-10 py-3 md:py-4 flex items-center gap-7 text-base md:text-lg">
+        <nav className="max-w-[1600px] mx-auto px-5 md:px-10 py-3 md:py-4 flex items-center gap-4 md:gap-7 overflow-x-auto whitespace-nowrap text-base md:text-lg">
           {navLinks.map(({ id, label }) => {
             const isActive = active === id;
             return (
@@ -497,6 +625,11 @@ export default function Page() {
       {/* PROJECTS */}
       <Section id="projects" title="Projects">
         <ProjectsTabbed />
+      </Section>
+
+      {/* BLOG */}
+      <Section id="blog" title="Blog">
+        <BlogSection />
       </Section>
 
       {/* CERTIFICATES */}
