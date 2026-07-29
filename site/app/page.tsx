@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, ExternalLink, Github, Linkedin, Mail, Moon, Sun } from "lucide-react";
 
@@ -388,19 +388,10 @@ export default function Page() {
   // 👇 Base prefix ONLY when deployed to GH Pages
   const BASE = process.env.NODE_ENV === "production" ? "/portfolio_Uddipan" : "";
 
-  const offsetsRef = useRef<Partial<Record<SectionId, number>>>({});
-
   useEffect(() => {
-    const computeOffsets = () => {
-      const m: Partial<Record<SectionId, number>> = {};
-      SECTION_IDS.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) m[id] = el.getBoundingClientRect().top + window.scrollY;
-      });
-      offsetsRef.current = m;
-    };
+    let frame = 0;
 
-    const onScroll = () => {
+    const updateActiveSection = () => {
       // use actual header height so the active link switches exactly at section top
       const headerH =
         (document.querySelector("header") as HTMLElement | null)?.getBoundingClientRect().height ??
@@ -415,22 +406,37 @@ export default function Page() {
       }
       let current: SectionId = "about";
       for (const id of SECTION_IDS) {
-        const off = offsetsRef.current[id];
+        const el = document.getElementById(id);
+        const off = el ? el.getBoundingClientRect().top + window.scrollY : undefined;
         if (typeof off === "number" && y >= off) current = id;
         else break;
       }
       setActive(current);
     };
 
-    computeOffsets();
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", computeOffsets);
-    window.addEventListener("load", computeOffsets);
+    const scheduleUpdate = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(updateActiveSection);
+    };
+
+    scheduleUpdate();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("load", scheduleUpdate);
+
+    const observer =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(scheduleUpdate) : null;
+    SECTION_IDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer?.observe(el);
+    });
+
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", computeOffsets);
-      window.removeEventListener("load", computeOffsets);
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("load", scheduleUpdate);
+      observer?.disconnect();
     };
   }, []);
 
